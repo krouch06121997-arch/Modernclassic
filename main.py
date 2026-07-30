@@ -2,11 +2,11 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 import firebase_admin
-from firebase_admin import credentials, db # ឬ firestore ប្រសិនបើប្រើ Firestore
+from firebase_admin import credentials, db
 
 app = FastAPI()
 
-# เปิด CORS ໃຫ້ Frontend អាចហៅ API បាន
+# បើក CORS ឱ្យ Frontend និង Admin អាចហៅ API មកកាន់ Python បាន
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,16 +15,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ភ្ជាប់ Firebase (អ្នកអាចដាក់ Service Account JSON របស់អ្នកនៅទីនេះ)
-# ជាមួយ Realtime Database:
+# ភ្ជាប់ Firebase Realtime Database ຜ່ານ Service Account JSON
 cred = credentials.Certificate("firebase_credentials.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://saleflower-ef0db-default-rtdb.asia-southeast1.firebasedatabase.app'
 })
 
-IMGBB_API_KEY = "YOUR_IMGBB_API_KEY_HERE" # ទុកកន្លែងនេះមានសុវត្ថិភាព មិនធ្លាយទៅ Client
+IMGBB_API_KEY = "YOUR_IMGBB_API_KEY_HERE"  # ដាក់ ImgBB API Key របស់អ្នកនៅទីនេះ
 
-# API សម្រាប់ Admin អាប់ឡូតរូបភាព និងបញ្ចូលទំនិញ
 @app.post("/api/products")
 async def create_product(
     name: str = Form(...),
@@ -34,7 +32,7 @@ async def create_product(
     image: UploadFile = File(...)
 ):
     try:
-        # ១. អាប់ឡូតរូបភាពទៅ ImgBB ຜ່ານ Python Backend
+        # ១. អាប់ឡូតរូបភាពទៅ ImgBB ຜ່ານ Python Backend (សុវត្ថិភាព មិនធ្លាយ API Key)
         image_bytes = await image.read()
         response = requests.post(
             "https://api.imgbb.com/1/upload",
@@ -62,6 +60,3 @@ async def create_product(
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-@app.get("/api/health")
-async def health_check():
-  return {"status": "healthy"}
