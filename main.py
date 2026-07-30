@@ -1,7 +1,6 @@
-import os
 import firebase_admin
 from firebase_admin import credentials, db
-from fastapi import FastAPI, File, HTTPException, UploadFile, Form
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 
@@ -15,18 +14,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# តភ្ជាប់ Firebase ដោយប្រើប្រាស់ Environment Variables (ការពារកំហុស FileNotFoundError នៅលើ Render)
+# យកទិន្នន័យពីក្នុងឯកសារ firebase_credentials.json មកបំពេញទីនេះផ្ទាល់
 firebase_config = {
-    "type": os.environ.get("FIREBASE_TYPE", "service_account"),
-    "project_id": os.environ.get("FIREBASE_PROJECT_ID", "saleflower-ef0db"),
-    "private_key_id": os.environ.get("FIREBASE_PRIVATE_KEY_ID", ""),
-    "private_key": os.environ.get("FIREBASE_PRIVATE_KEY", "").replace("\\n", "\n"),
-    "client_email": os.environ.get("FIREBASE_CLIENT_EMAIL", ""),
-    "client_id": os.environ.get("FIREBASE_CLIENT_ID", ""),
+    "type": "service_account",
+    "project_id": "saleflower-ef0db",
+    "private_key_id": "YOUR_PRIVATE_KEY_ID_HERE",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nYOUR_ACTUAL_PRIVATE_KEY_HERE\n-----END PRIVATE KEY-----\n",
+    "client_email": "YOUR_CLIENT_EMAIL_HERE",
+    "client_id": "YOUR_CLIENT_ID_HERE",
     "auth_uri": "https://accounts.google.com/o/oauth2/auth",
     "token_uri": "https://oauth2.googleapis.com/token",
     "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-    "client_x509_cert_url": os.environ.get("FIREBASE_CLIENT_X509_CERT_URL", ""),
+    "client_x509_cert_url": "YOUR_CLIENT_X509_CERT_URL_HERE",
 }
 
 cred = credentials.Certificate(firebase_config)
@@ -40,7 +39,6 @@ firebase_admin.initialize_app(
 IMGBB_API_KEY = "YOUR_IMGBB_API_KEY_HERE"  # ដាក់ ImgBB API Key របស់អ្នក
 
 
-# ១. បង្កើត API សម្រាប់ទាញយកទំនិញទាំងអស់
 @app.get("/api/products")
 async def get_products():
   try:
@@ -49,7 +47,6 @@ async def get_products():
     if not products_data:
       return []
 
-    # แปลงข้อมูลจาก Firebase Dictionary เป็น List
     products_list = []
     for key, value in products_data.items():
       value["id"] = key
@@ -59,7 +56,6 @@ async def get_products():
     raise HTTPException(status_code=500, detail=str(e))
 
 
-# ២. បង្កើត API សម្រាប់ Upload រូបភាពច្រើនសន្លឹក
 @app.post("/api/upload-images")
 async def upload_images(files: list[UploadFile] = File(...)):
   urls = []
@@ -79,7 +75,6 @@ async def upload_images(files: list[UploadFile] = File(...)):
     raise HTTPException(status_code=500, detail=str(e))
 
 
-# ៣. បង្កើត API សម្រាប់បន្ថែមទំនិញថ្មី
 @app.post("/api/products")
 async def create_product(product: dict):
   try:
@@ -90,7 +85,6 @@ async def create_product(product: dict):
     raise HTTPException(status_code=500, detail=str(e))
 
 
-# ៤. កែប្រែ Stock
 @app.put("/api/products/{id}/stock")
 async def update_stock(id: str, data: dict):
   try:
@@ -101,7 +95,6 @@ async def update_stock(id: str, data: dict):
     raise HTTPException(status_code=500, detail=str(e))
 
 
-# ៥. លុបផលិតផល
 @app.delete("/api/products/{id}")
 async def delete_product(id: str):
   try:
