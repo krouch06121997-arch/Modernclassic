@@ -1,11 +1,12 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List
+import httpx
 
 app = FastAPI(title="Modern Lux Store API", version="1.0")
 
-# បើក CORS ដើម្បីឱ្យ Frontend អាចទាក់ទងមក Backend បាន
+# បើក CORS ដើម្បីឱ្យ Frontend អាចទាក់ទងមក Backend ได้
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -26,7 +27,7 @@ class Product(BaseModel):
 class StockUpdate(BaseModel):
     stock: int
 
-# ទិន្នន័យគំរូក្នុងអង្គចងចាំ (អាចប្តូរទៅប្រើ Database ដូចជា SQLite / PostgreSQL ពេលយកឡើង Render)
+# ទិន្នន័យគំរូក្នុងអង្គចងចាំ
 products_db = [
     { "id": "p1", "category": "watch", "name": "Classic Luxury Watch", "price": 120.00, "stock": 15, "imageUrl": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=60" },
     { "id": "p2", "category": "watch", "name": "Sport Chronograph Watch", "price": 150.00, "stock": 10, "imageUrl": "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=500&auto=format&fit=crop&q=60" },
@@ -36,6 +37,7 @@ products_db = [
     { "id": "p6", "category": "perfume", "name": "Ocean Breeze Fragrance", "price": 95.00, "stock": 8, "imageUrl": "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=500&auto=format&fit=crop&q=60" }
 ]
 
+# --- API សម្រាប់ទំនិញ (Products CRUD) ---
 @app.get("/api/products", response_model=List[Product])
 def get_products():
     return products_db
@@ -62,3 +64,31 @@ def delete_product(product_id: str):
         raise HTTPException(status_code=404, detail="Product not found")
     return {"message": "Product deleted successfully"}
 
+
+# --- API សម្រាប់ Uptime / Health Check (ការពារកុំឱ្យ Render ដេកលក់) ---
+@app.get("/api/health")
+def health_check():
+    return {
+        "status": "online",
+        "message": "Modern Lux Store API is awake and running smoothly!"
+    }
+
+UPTIMEROBOT_API_KEY = "ur1234567-xxxx-xxxx-xxxx-xxxxxxxxxxxx"  # ជំនួសដោយ UptimeRobot API Key របស់អ្នក
+
+@app.get("/api/uptime-status")
+async def get_uptime_status():
+    url = "https://api.uptimerobot.com/v2/getMonitors"
+    payload = {
+        "api_key": UPTIMEROBOT_API_KEY,
+        "format": "json"
+    }
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(url, data=payload)
+            data = response.json()
+            if data.get("stat") == "ok":
+                return {"monitors": data.get("monitors", [])}
+            else:
+                raise HTTPException(status_code=400, detail="Failed to fetch uptime data")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
