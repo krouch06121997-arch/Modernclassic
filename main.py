@@ -14,12 +14,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# តភ្ជាប់ Firebase ដោយប្រើ Database URL ផ្ទាល់
+# តភ្ជាប់ Firebase ដោយប្រើ Database URL និង Database Secret ផ្ទាល់
 firebase_admin.initialize_app(options={
-    'databaseURL': 'https://saleflower-ef0db-default-rtdb.asia-southeast1.firebasedatabase.app'
+    'databaseURL': 'https://saleflower-ef0db-default-rtdb.asia-southeast1.firebasedatabase.app',
+    'databaseAuthVariableOverride': {
+        'uid': 'admin-service'
+    },
+    'credential': firebase_admin.credentials.AnonymousCredential() # ប្រើប្រាស់ជាមួយ Database Secret
 })
 
-# ដាក់ ImgBB API Key របស់អ្នករួចរាល់
 IMGBB_API_KEY = "6fa695c8e1e1effde49e32d13b295125"
 
 @app.get("/api/products")
