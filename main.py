@@ -14,12 +14,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# តភ្ជាប់ Firebase ដោយប្រើ Database URL ផ្ទាល់ (មិនបាច់ប្រើ Certificate ឬ Service Account JSON ទៀតទេ)
+# តភ្ជាប់ Firebase ដោយប្រើ Database URL ផ្ទាល់
 firebase_admin.initialize_app(options={
     'databaseURL': 'https://saleflower-ef0db-default-rtdb.asia-southeast1.firebasedatabase.app'
 })
 
-IMGBB_API_KEY = "YOUR_IMGBB_API_KEY_HERE"  # ដាក់ ImgBB API Key របស់អ្នក
+# ដាក់ ImgBB API Key របស់អ្នករួចរាល់
+IMGBB_API_KEY = "6fa695c8e1e1effde49e32d13b295125"
 
 @app.get("/api/products")
 async def get_products():
@@ -81,4 +82,3 @@ async def delete_product(id: str):
         return {"status": "success"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
