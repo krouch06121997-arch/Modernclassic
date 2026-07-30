@@ -6,7 +6,6 @@ from firebase_admin import credentials, db
 
 app = FastAPI()
 
-# បើក CORS ឱ្យ Frontend និង Admin អាចហៅ API មកកាន់ Python បាន
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,13 +14,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ភ្ជាប់ Firebase Realtime Database ຜ່ານ Service Account JSON
-cred = credentials.Certificate("firebase_credentials.json")
-firebase_admin.initialize_app(cred, {
+# វិធីសាស្ត្រថ្មី៖ តភ្ជាប់ដោយមិនបាច់ប្រើ File JSON (កាត់បន្ថយបញ្ហា File Not Found)
+# ប្រសិនបើ Project របស់អ្នកបើកสิทธิ์ Database Rules ជា public (read/write: true)
+firebase_admin.initialize_app(options={
     'databaseURL': 'https://saleflower-ef0db-default-rtdb.asia-southeast1.firebasedatabase.app'
 })
 
-IMGBB_API_KEY = "YOUR_IMGBB_API_KEY_HERE"  # ដាក់ ImgBB API Key របស់អ្នកនៅទីនេះ
+IMGBB_API_KEY = "YOUR_IMGBB_API_KEY_HERE"  # ដាក់ ImgBB API Key របស់អ្នក
 
 @app.post("/api/products")
 async def create_product(
@@ -32,7 +31,7 @@ async def create_product(
     image: UploadFile = File(...)
 ):
     try:
-        # ១. អាប់ឡូតរូបភាពទៅ ImgBB ຜ່ານ Python Backend (សុវត្ថិភាព មិនធ្លាយ API Key)
+        # ១. អាប់ឡូតរូបភាពទៅ ImgBB
         image_bytes = await image.read()
         response = requests.post(
             "https://api.imgbb.com/1/upload",
