@@ -67,7 +67,7 @@ app.post('/signin', async (req, res) => {
         return res.render('signin', { error: error.message });
     }
 
-    res.redirect(`/store/SHOP123?email=${email}`);
+    res.redirect(`/`);
 });
 
 app.get('/signup', (req, res) => {
