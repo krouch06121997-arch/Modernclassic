@@ -82,9 +82,13 @@ app.get('/forgot-password', (req, res) => {
 
 app.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
-    // ផ្ញើ Reset Link ទៅ Email របស់អតិថិជន
+    
+    // បង្កើត Redirect URL ឱ្យទៅកាន់ Render ដោយស្វ័យប្រវត្តិ
+    const domain = process.env.RENDER_EXTERNAL_URL || `${req.protocol}://${req.get('host')}`;
+    const redirectTo = `${domain}/reset-password`;
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${req.protocol}://${req.get('host')}/reset-password`,
+        redirectTo: redirectTo
     });
 
     if (error) {
