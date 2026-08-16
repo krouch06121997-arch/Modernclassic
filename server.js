@@ -31,6 +31,11 @@ app.use(checkOwnerAccess);
 
 // --- ROUTES ---
 
+// UptimeRobot Health-Check Route (ការពារ Server Sleep)
+app.get('/ping', (req, res) => {
+    res.status(200).send('OK - Server is live!');
+});
+
 // 1. Root Route
 app.get('/', (req, res) => {
     res.render('index');
