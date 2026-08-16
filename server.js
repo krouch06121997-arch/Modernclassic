@@ -75,6 +75,29 @@ app.post('/signup', async (req, res) => {
     res.redirect('/signin');
 });
 
+// 1. ទំព័រវាយ Email ដើម្បិសុំ Reset Password
+app.get('/forgot-password', (req, res) => {
+    res.render('forgot_password', { message: null, error: null });
+});
+
+app.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+    // ផ្ញើ Reset Link ទៅ Email របស់អតិថិជន
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${req.protocol}://${req.get('host')}/reset-password`,
+    });
+
+    if (error) {
+        return res.render('forgot_password', { message: null, error: error.message });
+    }
+
+    res.render('forgot_password', { 
+        message: 'តំណភ្ជាប់សម្រាប់ប្តូរលេខសម្ងាត់ ត្រូវបានផ្ញើទៅកាន់ Email របស់អ្នកហើយ! សូមពិនិត្យ Inbox/Spam។', 
+        error: null 
+    });
+});
+
+
 // 3. Store Route (ទាញទិន្នន័យពី Supabase DB)
 app.get('/store', (req, res) => {
     res.redirect('/store/SHOP123');
