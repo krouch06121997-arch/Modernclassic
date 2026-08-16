@@ -3,64 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ប្រព័ន្ធគ្រប់គ្រងហាង - KhmerPOS2027</title>
+    <title>គ្រប់គ្រងប្រព័ន្ធ POS - PACH KROUCH</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-100 font-sans min-h-screen flex flex-col justify-between">
-    <header class="bg-white shadow-sm border-b px-6 py-4 flex justify-between items-center">
-        <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center font-bold text-xl">
-                <i class="fa-solid fa-store"></i>
+<body class="bg-gray-100 font-sans min-h-screen flex">
+
+    <!-- Sidebar ខាងឆ្វេង -->
+    <aside class="w-64 bg-slate-900 text-white min-h-screen p-4 flex flex-col justify-between hidden md:flex">
+        <div>
+            <div class="flex items-center space-x-3 mb-8 px-2">
+                <div class="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-xl font-bold">
+                    <i class="fa-solid fa-store"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-sm tracking-wide">PACH KROUCH POS</h1>
+                    <p class="text-xs text-gray-400">ប្រព័ន្ធគ្រប់គ្រងស្តុក & លក់</p>
+                </div>
             </div>
-            <div>
-                <h1 class="font-bold text-gray-800 text-base">KhmerPOS 2027</h1>
-                <p class="text-xs text-gray-500">ប្រព័ន្ធគ្រប់គ្រង និងលក់ទំនិញ</p>
-            </div>
-        </div>
-        <div class="flex items-center space-x-2 bg-gray-50 px-3 py-1.5 rounded-xl border">
-    <i class="fa-solid fa-circle-user text-blue-600"></i>
-    <span class="text-xs font-semibold text-gray-700">
-        <%= locals.user ? user.email : 'ភ្ញៀវ' %>
-    </span>
+
+            <nav class="space-y-1">
+                <a href="/" class="flex items-center space-x-3 bg-emerald-600 text-white px-4 py-3 rounded-xl font-semibold text-sm">
+                    <i class="fa-solid fa-chart-pie w-5"></i>
+                    <span>ផ្ទាំងគ្រប់គ្រង (Dashboard)</span>
+                </a>
+                <a href="#pos" class="flex items-center space-x-3 text-gray-400 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-xl font-semibold text-sm transition">
+                    <i class="fa-solid fa-cart-shopping w-5"></i>
+                    <span>ផ្នែកលក់ (POS System)</span>
+                </a>
+                <a href="#products" class="flex items-center space-x-3 text-gray-400 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-xl font-semibold text-sm transition">
+                    <i class="fa-solid fa-boxes-stacked w-5"></i>
+                    <span>គ្រប់គ្រងទំនិញ</span>
+                </a>
+            </nav>
         </div>
 
-    </header>
-
-    <main class="max-w-4xl mx-auto p-6 w-full my-auto">
-        <div class="bg-white rounded-3xl p-8 shadow-sm border text-center">
-            <div class="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
-                <i class="fa-solid fa-shop"></i>
+        <div class="border-t border-slate-800 pt-4">
+            <div class="flex items-center space-x-3 px-2 mb-3">
+                <i class="fa-solid fa-circle-user text-xl text-emerald-400"></i>
+                <div class="truncate">
+                    <p class="text-xs text-gray-400">Admin Logged in</p>
+                    <p class="text-xs font-bold truncate"><%= user ? user.email : '' %></p>
+                </div>
             </div>
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">សូមស្វាគមន៍មកកាន់ប្រព័ន្ធលក់ Online</h2>
-            <p class="text-gray-500 text-sm max-w-md mx-auto mb-8">ប្រព័ន្ធត្រូវបានភ្ជាប់ជាមួយ Supabase Database & Auth រួចរាល់។</p>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg mx-auto">
-                <a href="/store/SHOP123" class="flex items-center p-4 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-2xl transition group text-left">
-                    <div class="w-12 h-12 bg-blue-600 text-white rounded-xl flex items-center justify-center text-xl mr-4">
-                        <i class="fa-solid fa-cart-shopping"></i>
-                    </div>
+            <a href="/logout" class="flex items-center space-x-2 text-xs text-red-400 hover:bg-red-500/10 p-2 rounded-lg font-bold transition">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>ចាកចេញពីប្រព័ន្ធ</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col min-h-screen">
+        <!-- Top Navbar -->
+        <header class="bg-white border-b px-6 py-4 flex justify-between items-center shadow-sm">
+            <h2 class="text-lg font-bold text-gray-800">ផ្ទាំងគ្រប់គ្រងទំនិញ និងការលក់</h2>
+            <div class="flex items-center space-x-3 md:hidden">
+                <span class="text-xs font-bold text-gray-600"><%= user ? user.email : '' %></span>
+                <a href="/logout" class="text-xs text-red-600 font-bold bg-red-50 px-3 py-1.5 rounded-lg">ចាកចេញ</a>
+            </div>
+        </header>
+
+        <!-- Dynamic Dashboard Cards & Table -->
+        <div class="p-6 space-y-6 flex-1">
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
                     <div>
-                        <h3 class="font-bold text-gray-800 text-sm">មើលទំព័រហាង (Store)</h3>
-                        <p class="text-xs text-gray-500">បញ្ជាទិញ និងបង់ប្រាក់</p>
+                        <p class="text-xs text-gray-500 font-semibold mb-1">ទំនិញសរុប</p>
+                        <p class="text-2xl font-bold text-gray-800">120 មុខ</p>
                     </div>
-                </a>
-                <a href="/signin" class="flex items-center p-4 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-2xl transition group text-left">
-                    <div class="w-12 h-12 bg-emerald-600 text-white rounded-xl flex items-center justify-center text-xl mr-4">
-                        <i class="fa-solid fa-right-to-bracket"></i>
+                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-box"></i>
                     </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
                     <div>
-                        <h3 class="font-bold text-gray-800 text-sm">ចូលប្រព័ន្ធ (Sign In)</h3>
-                        <p class="text-xs text-gray-500">ចូលកាន់កាប់គណនី</p>
+                        <p class="text-xs text-gray-500 font-semibold mb-1">ការលក់ថ្ងៃនេះ</p>
+                        <p class="text-2xl font-bold text-emerald-600">$450.00</p>
                     </div>
-                </a>
+                    <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-sack-dollar"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-gray-500 font-semibold mb-1">ទំនិញជិតអស់ពីស្តុក</p>
+                        <p class="text-2xl font-bold text-amber-600">3 មុខ</p>
+                    </div>
+                    <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Management Table -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="p-5 border-b flex justify-between items-center">
+                    <h3 class="font-bold text-gray-800">បញ្ជីទំនិញក្នុងស្តុក</h3>
+                    <button class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition">
+                        + បន្ថែមទំនិញថ្មី
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-gray-600">
+                        <thead class="bg-gray-50 border-b text-gray-700 font-bold uppercase">
+                            <tr>
+                                <th class="p-4">ឈ្មោះទំនិញ</th>
+                                <th class="p-4">តម្លៃ (Price)</th>
+                                <th class="p-4">ចំនួនក្នុងស្តុក</th>
+                                <th class="p-4">ស្ថានភាព</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-4 font-bold text-gray-800">កាហ្វេទឹកដោះគោ (Iced Coffee)</td>
+                                <td class="p-4 text-emerald-600 font-bold">$1.50</td>
+                                <td class="p-4">50 កែវ</td>
+                                <td class="p-4"><span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-bold text-[10px]">មានស្តុក</span></td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-4 font-bold text-gray-800">តែបៃតង (Green Tea)</td>
+                                <td class="p-4 text-emerald-600 font-bold">$1.75</td>
+                                <td class="p-4">25 កែវ</td>
+                                <td class="p-4"><span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-bold text-[10px]">មានស្តុក</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </main>
-
-    <footer class="text-center py-4 text-xs text-gray-400">
-        © 2026 PACH KROUCH Store. All rights reserved.
-    </footer>
 </body>
 </html>
-
