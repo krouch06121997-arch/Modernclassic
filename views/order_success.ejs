@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>បញ្ជាទិញជោគជ័យ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white p-8 rounded-3xl shadow-xl text-center max-w-sm w-full border">
+        <div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+            <i class="fa-solid fa-check font-bold"></i>
+        </div>
+        
+        <h2 class="text-xl font-bold text-gray-800 mb-1">បញ្ជាទិញទទួលបានជោគជ័យ!</h2>
+        <p class="text-xs text-gray-500 mb-6">អរគុណសម្រាប់ការបញ្ជាទិញពីហាងយើងខ្ញុំ</p>
+
+        <div class="bg-gray-50 p-4 rounded-2xl mb-6 text-left text-sm space-y-2 border">
+            <div class="flex justify-between">
+                <span class="text-gray-500">លេខវិក្កយបត្រ:</span>
+                <span class="font-bold text-gray-800"><%= order.id %></span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-500">អតិថិជន:</span>
+                <span class="font-bold text-gray-800"><%= order.customer_name %></span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-500">លេខទូរស័ព្ទ:</span>
+                <span class="font-bold text-gray-800"><%= order.customer_phone %></span>
+            </div>
+            <hr class="my-1 border-gray-200">
+            <div class="flex justify-between text-base">
+                <span class="font-bold text-gray-700">ទឹកប្រាក់សរុប:</span>
+                <span class="font-bold text-emerald-600">$<%= parseFloat(order.total_amount).toFixed(2) %></span>
+            </div>
+        </div>
+
+        <a href="/store/SHOP123" class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-md">
+            ត្រឡប់ទៅហាងវិញ
+        </a>
+    </div>
+
+</body>
+</html>
+
