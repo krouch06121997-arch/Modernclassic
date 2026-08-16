@@ -5,12 +5,9 @@ const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 
 // ភ្ជាប់ទៅកាន់ Supabase Client
-const supabaseUrl = process.env.SUPABASE_URL || 'https://your-project.supabase.co';
-const supabaseKey = process.env.SUPABASE_ANON_KEY || 'your-anon-key';
-
-if (!process.env.SUPABASE_URL) {
-    console.error("⚠️  Warning: SUPABASE_URL មិនទាន់បានកំណត់ក្នុង Environment Variables ទេ!");
-}
+// យកតម្លៃពី process.env ឬប្រើប្រាស់ Fallback URL បណ្តោះអាសន្ន
+const supabaseUrl = process.env.SUPABASE_URL || 'https://placeholder-url.supabase.co';
+const supabaseKey = process.env.SUPABASE_ANON_KEY || 'placeholder-key';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
