@@ -5,9 +5,15 @@ const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 
 // ភ្ជាប់ទៅកាន់ Supabase Client
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.SUPABASE_URL || 'https://your-project.supabase.co';
+const supabaseKey = process.env.SUPABASE_ANON_KEY || 'your-anon-key';
+
+if (!process.env.SUPABASE_URL) {
+    console.error("⚠️  Warning: SUPABASE_URL មិនទាន់បានកំណត់ក្នុង Environment Variables ទេ!");
+}
+
 const supabase = createClient(supabaseUrl, supabaseKey);
+
 
 // Setup Views និង Static Files
 app.set('view engine', 'ejs');
