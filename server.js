@@ -5,12 +5,9 @@ const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 
 // ភ្ជាប់ទៅកាន់ Supabase Client
-// យកតម្លៃពី process.env ឬប្រើប្រាស់ Fallback URL បណ្តោះអាសន្ន
 const supabaseUrl = process.env.SUPABASE_URL || 'https://placeholder-url.supabase.co';
 const supabaseKey = process.env.SUPABASE_ANON_KEY || 'placeholder-key';
-
 const supabase = createClient(supabaseUrl, supabaseKey);
-
 
 // Setup Views និង Static Files
 app.set('view engine', 'ejs');
@@ -20,28 +17,21 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Middleware ពិនិត្យ Owner Access
-const checkOwnerAccess = (req, res, next) => {
-    const ownerEmail = req.query.email || req.body.email;
-    const allowedEmail = process.env.ALLOWED_EMAIL || "krouch06121997@gmail.com";
-    if (req.path.startsWith('/admin') && ownerEmail !== allowedEmail) {
-        return res.status(403).send("អ្នកគ្មានសិទ្ធិចូលកាន់ប្រព័ន្ធនេះទេ!");
-    }
-    next();
-};
-
-app.use(checkOwnerAccess);
+// Middleware សម្រាប់ Logout (ចាកចេញ)
+app.get('/logout', async (req, res) => {
+    await supabase.auth.signOut();
+    res.redirect('/signin');
+});
 
 // --- ROUTES ---
 
-// UptimeRobot Health-Check Route (ការពារ Server Sleep)
+// Health-Check Route
 app.get('/ping', (req, res) => {
     res.status(200).send('OK - Server is live!');
 });
 
-// 1. Root Route
+// 1. Root Route (Admin Dashboard - តម្រូវឱ្យ Sign In និងទាញទិន្នន័យតាម User)
 app.get('/', async (req, res) => {
-    // ឆែកមើល Session User
     const { data: { user } } = await supabase.auth.getUser();
 
     // បើគ្មាន User ទេ ឱ្យលោតទៅ Sign In ភ្លាម
@@ -49,10 +39,17 @@ app.get('/', async (req, res) => {
         return res.redirect('/signin');
     }
 
-    // បើ Sign In រួចហើយ ឱ្យបង្ហាញទំព័រ Admin Dashboard POS
-    res.render('index', { user });
-});
+    // ទាញយកទំនិញដាច់ដោយឡែករបស់ User ដែលកំពុង Login (ប្រើ user_id)
+    const { data: products, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
+    if (error) console.error("Error fetching products:", error.message);
+
+    res.render('index', { user, products: products || [] });
+});
 
 // 2. Authentication Routes
 app.get('/signin', (req, res) => {
@@ -67,7 +64,8 @@ app.post('/signin', async (req, res) => {
         return res.render('signin', { error: error.message });
     }
 
-    res.redirect(`/`);
+    // Sign In រួច បង្វែរទៅ Admin Dashboard (index)
+    res.redirect('/');
 });
 
 app.get('/signup', (req, res) => {
@@ -85,33 +83,28 @@ app.post('/signup', async (req, res) => {
     res.redirect('/signin');
 });
 
-// 1. ទំព័រវាយ Email ដើម្បិសុំ Reset Password
+// Forgot & Reset Password Routes
 app.get('/forgot-password', (req, res) => {
     res.render('forgot_password', { message: null, error: null });
 });
 
 app.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
-    
-    // បង្កើត Redirect URL ឱ្យទៅកាន់ Render ដោយស្វ័យប្រវត្តិ
     const domain = process.env.RENDER_EXTERNAL_URL || `${req.protocol}://${req.get('host')}`;
     const redirectTo = `${domain}/reset-password`;
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: redirectTo
-    });
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
 
     if (error) {
         return res.render('forgot_password', { message: null, error: error.message });
     }
 
     res.render('forgot_password', { 
-        message: 'តំណភ្ជាប់សម្រាប់ប្តូរលេខសម្ងាត់ ត្រូវបានផ្ញើទៅកាន់ Email របស់អ្នកហើយ! សូមពិនិត្យ Inbox/Spam។', 
+        message: 'តំណភ្ជាប់សម្រាប់ប្តូរលេខសម្ងាត់ ត្រូវបានផ្ញើទៅកាន់ Email របស់អ្នកហើយ!', 
         error: null 
     });
 });
 
-// Route សម្រាប់បង្ហាញទំព័រកំណត់លេខសម្ងាត់ថ្មី
 app.get('/reset-password', (req, res) => {
     res.render('reset_password', {
         supabaseUrl: process.env.SUPABASE_URL,
@@ -119,106 +112,26 @@ app.get('/reset-password', (req, res) => {
     });
 });
 
+// 3. API បន្ថែមទំនិញថ្មី (ភ្ជាប់ជាមួយ user_id)
+app.post('/add-product', async (req, res) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return res.redirect('/signin');
 
-// 3. Store Route (ទាញទិន្នន័យពី Supabase DB)
-app.get('/store', (req, res) => {
-    res.redirect('/store/SHOP123');
-});
+    const { name, barcode, price, current_stock, unit } = req.body;
 
-app.get('/store/:id', async (req, res) => {
-    try {
-        const { data: products, error } = await supabase
-            .from('products')
-            .select('*')
-            .order('id', { ascending: true });
-
-        if (error) throw error;
-
-        res.render('store', {
-            shop: { name: "PACH KROUCH STORE", id: req.params.id },
-            products: products || []
-        });
-    } catch (err) {
-        console.error("Supabase Error:", err.message);
-        res.status(500).send("មិនអាចទាញយកទិន្នន័យទំនិញបានទេ");
-    }
-});
-
-// 4. API Verification & Order (កាត់ស្តុក និងរក្សាទុកក្នុង Supabase)
-app.post('/api/verify-and-order', async (req, res) => {
-    const { expectedAmount, cart, customer } = req.body;
-
-    try {
-        const orderId = "ORD-" + Date.now().toString().slice(-6);
-
-        // ១. រក្សាទុក Order
-        const { error: orderError } = await supabase.from('orders').insert([{
-            id: orderId,
-            customer_name: customer?.name || "អតិថិជន",
-            customer_phone: customer?.phone || "012345678",
-            total_amount: expectedAmount
-        }]);
-
-        if (orderError) throw orderError;
-
-        // ២. កាត់ស្តុកទំនិញក្នុង Supabase
-        if (cart && cart.length > 0) {
-            for (const item of cart) {
-                const { data: prod } = await supabase
-                    .from('products')
-                    .select('stock')
-                    .eq('id', item.id)
-                    .single();
-                
-                if (prod) {
-                    const newStock = Math.max(0, prod.stock - item.qty);
-                    await supabase
-                        .from('products')
-                        .update({ stock: newStock })
-                        .eq('id', item.id);
-                }
-            }
+    const { error } = await supabase.from('products').insert([
+        { 
+            user_id: user.id,
+            name: name,
+            barcode: barcode,
+            price: parseFloat(price) || 0,
+            current_stock: parseFloat(current_stock) || 0,
+            unit: unit || 'កញ្ចប់'
         }
+    ]);
 
-        return res.json({
-            success: true,
-            message: 'ការបង់ប្រាក់ និងបង្កើត Order ជោគជ័យ!',
-            orderId: orderId,
-            totalAmount: expectedAmount
-        });
-
-    } catch (error) {
-        console.error("Order Error:", error.message);
-        res.status(500).json({ success: false, message: 'មិនអាចរក្សាទុកទិន្នន័យបានទេ' });
-    }
-});
-
-// 5. Order Success Route
-app.get('/order-success', async (req, res) => {
-    try {
-        const orderId = req.query.id;
-        const { data: order, error } = await supabase
-            .from('orders')
-            .select('*')
-            .eq('id', orderId)
-            .single();
-
-        if (error || !order) {
-            return res.render('order_success', {
-                order: {
-                    id: orderId || "N/A",
-                    customer_name: "អតិថិជន",
-                    customer_phone: "012345678",
-                    total_amount: parseFloat(req.query.amount || 0)
-                }
-            });
-        }
-
-        res.render('order_success', { order });
-    } catch (err) {
-        console.error("Order Page Error:", err.message);
-        res.status(500).send("មិនអាចបង្ហាញទំព័រ Order Success បានទេ");
-    }
+    if (error) console.error("Insert Error:", error.message);
+    res.redirect('/');
 });
 
 const PORT = process.env.PORT || 3000;
