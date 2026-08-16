@@ -40,9 +40,19 @@ app.get('/ping', (req, res) => {
 });
 
 // 1. Root Route
-app.get('/', (req, res) => {
-    res.render('index');
+app.get('/', async (req, res) => {
+    // ឆែកមើល Session User
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // បើគ្មាន User ទេ ឱ្យលោតទៅ Sign In ភ្លាម
+    if (!user) {
+        return res.redirect('/signin');
+    }
+
+    // បើ Sign In រួចហើយ ឱ្យបង្ហាញទំព័រ Admin Dashboard POS
+    res.render('index', { user });
 });
+
 
 // 2. Authentication Routes
 app.get('/signin', (req, res) => {
