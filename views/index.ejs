@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>គ្រប់គ្រងប្រព័ន្ធ POS - PACH KROUCH</title>
+    <title>ប្រព័ន្ធគ្រប់គ្រងហាង - PACH KROUCH POS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -12,41 +12,50 @@
     <!-- Sidebar ខាងឆ្វេង -->
     <aside class="w-64 bg-slate-900 text-white min-h-screen p-4 flex flex-col justify-between hidden md:flex">
         <div>
+            <!-- Shop Logo & Title -->
             <div class="flex items-center space-x-3 mb-8 px-2">
-                <div class="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-xl font-bold">
-                    <i class="fa-solid fa-store"></i>
+                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-xl font-bold shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-shop"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-sm tracking-wide">PACH KROUCH POS</h1>
-                    <p class="text-xs text-gray-400">ប្រព័ន្ធគ្រប់គ្រងស្តុក & លក់</p>
+                    <h1 class="font-bold text-sm tracking-wide">PACH KROUCH</h1>
+                    <p class="text-xs text-slate-400">ប្រព័ន្ធគ្រប់គ្រងហាងទំនើប</p>
                 </div>
             </div>
 
-            <nav class="space-y-1">
-                <a href="/" class="flex items-center space-x-3 bg-emerald-600 text-white px-4 py-3 rounded-xl font-semibold text-sm">
-                    <i class="fa-solid fa-chart-pie w-5"></i>
+            <!-- Navigation Links -->
+            <nav class="space-y-1.5">
+                <a href="/" class="flex items-center space-x-3 bg-indigo-600 text-white px-4 py-3 rounded-xl font-semibold text-sm shadow-md">
+                    <i class="fa-solid fa-chart-line w-5"></i>
                     <span>ផ្ទាំងគ្រប់គ្រង (Dashboard)</span>
                 </a>
-                <a href="#pos" class="flex items-center space-x-3 text-gray-400 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-xl font-semibold text-sm transition">
-                    <i class="fa-solid fa-cart-shopping w-5"></i>
-                    <span>ផ្នែកលក់ (POS System)</span>
+                <a href="#pos" class="flex items-center space-x-3 text-slate-400 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-xl font-semibold text-sm transition">
+                    <i class="fa-solid fa-cash-register w-5"></i>
+                    <span>ផ្នែកគិតលុយ (POS)</span>
                 </a>
-                <a href="#products" class="flex items-center space-x-3 text-gray-400 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-xl font-semibold text-sm transition">
-                    <i class="fa-solid fa-boxes-stacked w-5"></i>
-                    <span>គ្រប់គ្រងទំនិញ</span>
+                <a href="#products" class="flex items-center space-x-3 text-slate-400 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-xl font-semibold text-sm transition">
+                    <i class="fa-solid fa-boxes-packing w-5"></i>
+                    <span>គ្រប់គ្រងស្តុកទំនិញ</span>
+                </a>
+                <a href="#reports" class="flex items-center space-x-3 text-slate-400 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-xl font-semibold text-sm transition">
+                    <i class="fa-solid fa-file-invoice-dollar w-5"></i>
+                    <span>របាយការណ៍លក់</span>
                 </a>
             </nav>
         </div>
 
+        <!-- User Info & Logout -->
         <div class="border-t border-slate-800 pt-4">
             <div class="flex items-center space-x-3 px-2 mb-3">
-                <i class="fa-solid fa-circle-user text-xl text-emerald-400"></i>
+                <div class="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
                 <div class="truncate">
-                    <p class="text-xs text-gray-400">Admin Logged in</p>
-                    <p class="text-xs font-bold truncate"><%= user ? user.email : '' %></p>
+                    <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">អ្នកគ្រប់គ្រង</p>
+                    <p class="text-xs font-bold text-slate-200 truncate"><%= user ? user.email : '' %></p>
                 </div>
             </div>
-            <a href="/logout" class="flex items-center space-x-2 text-xs text-red-400 hover:bg-red-500/10 p-2 rounded-lg font-bold transition">
+            <a href="/logout" class="flex items-center space-x-2 text-xs text-red-400 hover:bg-red-500/10 p-2.5 rounded-xl font-bold transition">
                 <i class="fa-solid fa-right-from-bracket"></i>
                 <span>ចាកចេញពីប្រព័ន្ធ</span>
             </a>
@@ -57,79 +66,111 @@
     <main class="flex-1 flex flex-col min-h-screen">
         <!-- Top Navbar -->
         <header class="bg-white border-b px-6 py-4 flex justify-between items-center shadow-sm">
-            <h2 class="text-lg font-bold text-gray-800">ផ្ទាំងគ្រប់គ្រងទំនិញ និងការលក់</h2>
+            <div>
+                <h2 class="text-lg font-bold text-gray-800">ផ្ទាំងគ្រប់គ្រងអាជីវកម្ម</h2>
+                <p class="text-xs text-gray-500">មើលស្ថិតិការលក់ និងស្ថានភាពស្តុកទំនិញទូទៅ</p>
+            </div>
             <div class="flex items-center space-x-3 md:hidden">
                 <span class="text-xs font-bold text-gray-600"><%= user ? user.email : '' %></span>
                 <a href="/logout" class="text-xs text-red-600 font-bold bg-red-50 px-3 py-1.5 rounded-lg">ចាកចេញ</a>
             </div>
         </header>
 
-        <!-- Dynamic Dashboard Cards & Table -->
+        <!-- Dashboard Content -->
         <div class="p-6 space-y-6 flex-1">
-            <!-- Summary Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <!-- Top Metric Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
                     <div>
-                        <p class="text-xs text-gray-500 font-semibold mb-1">ទំនិញសរុប</p>
-                        <p class="text-2xl font-bold text-gray-800">120 មុខ</p>
+                        <p class="text-xs text-gray-500 font-semibold mb-1">ចំណូលសរុបថ្ងៃនេះ</p>
+                        <p class="text-2xl font-bold text-emerald-600">$1,280.00</p>
                     </div>
-                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-box"></i>
+                    <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-circle-dollar-to-slot"></i>
                     </div>
                 </div>
 
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
                     <div>
-                        <p class="text-xs text-gray-500 font-semibold mb-1">ការលក់ថ្ងៃនេះ</p>
-                        <p class="text-2xl font-bold text-emerald-600">$450.00</p>
+                        <p class="text-xs text-gray-500 font-semibold mb-1">ការលក់សរុប (Orders)</p>
+                        <p class="text-2xl font-bold text-gray-800">84 ប្រតិបត្តិការ</p>
                     </div>
-                    <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-sack-dollar"></i>
+                    <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-receipt"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-gray-500 font-semibold mb-1">ទំនិញក្នុងស្តុកសរុប</p>
+                        <p class="text-2xl font-bold text-gray-800">456 មុខ</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-boxes-stacked"></i>
                     </div>
                 </div>
 
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
                     <div>
                         <p class="text-xs text-gray-500 font-semibold mb-1">ទំនិញជិតអស់ពីស្តុក</p>
-                        <p class="text-2xl font-bold text-amber-600">3 មុខ</p>
+                        <p class="text-2xl font-bold text-amber-600">5 មុខ</p>
                     </div>
-                    <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl">
+                    <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-xl">
                         <i class="fa-solid fa-triangle-exclamation"></i>
                     </div>
                 </div>
             </div>
 
-            <!-- Products Management Table -->
+            <!-- Inventory Management Table -->
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="p-5 border-b flex justify-between items-center">
-                    <h3 class="font-bold text-gray-800">បញ្ជីទំនិញក្នុងស្តុក</h3>
-                    <button class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition">
-                        + បន្ថែមទំនិញថ្មី
+                <div class="p-5 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-base">បញ្ជីគ្រប់គ្រងស្តុកទំនិញ</h3>
+                        <p class="text-xs text-gray-500">ទិន្នន័យទំនិញ និងចំនួនដែលនៅសល់ជាក់ស្តែង</p>
+                    </div>
+                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-md shadow-indigo-500/20">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>បន្ថែមទំនិញថ្មី</span>
                     </button>
                 </div>
 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs text-gray-600">
-                        <thead class="bg-gray-50 border-b text-gray-700 font-bold uppercase">
+                        <thead class="bg-slate-50 border-b text-gray-700 font-bold uppercase tracking-wider">
                             <tr>
+                                <th class="p-4">កូដទំនិញ (SKU)</th>
                                 <th class="p-4">ឈ្មោះទំនិញ</th>
-                                <th class="p-4">តម្លៃ (Price)</th>
-                                <th class="p-4">ចំនួនក្នុងស្តុក</th>
+                                <th class="p-4">ប្រភេទ (Category)</th>
+                                <th class="p-4">តម្លៃលក់</th>
+                                <th class="p-4">ស្តុកនៅសល់</th>
                                 <th class="p-4">ស្ថានភាព</th>
+                                <th class="p-4 text-center">សកម្មភាព</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
-                            <tr class="hover:bg-gray-50">
-                                <td class="p-4 font-bold text-gray-800">កាហ្វេទឹកដោះគោ (Iced Coffee)</td>
-                                <td class="p-4 text-emerald-600 font-bold">$1.50</td>
-                                <td class="p-4">50 កែវ</td>
+                            <tr class="hover:bg-gray-50/80 transition">
+                                <td class="p-4 font-mono text-gray-500">SKU-1001</td>
+                                <td class="p-4 font-bold text-gray-800">អាវយឺតដៃខ្លី Cotton (Unisex)</td>
+                                <td class="p-4"><span class="bg-gray-100 text-gray-700 px-2.5 py-1 rounded-lg">សម្លៀកបំពាក់</span></td>
+                                <td class="p-4 text-emerald-600 font-bold">$8.50</td>
+                                <td class="p-4 font-semibold">45 អាវ</td>
                                 <td class="p-4"><span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-bold text-[10px]">មានស្តុក</span></td>
+                                <td class="p-4 text-center space-x-2">
+                                    <button class="text-blue-600 hover:text-blue-800 font-bold"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button class="text-red-600 hover:text-red-800 font-bold"><i class="fa-solid fa-trash"></i></button>
+                                </td>
                             </tr>
-                            <tr class="hover:bg-gray-50">
-                                <td class="p-4 font-bold text-gray-800">តែបៃតង (Green Tea)</td>
-                                <td class="p-4 text-emerald-600 font-bold">$1.75</td>
-                                <td class="p-4">25 កែវ</td>
-                                <td class="p-4"><span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-bold text-[10px]">មានស្តុក</span></td>
+                            <tr class="hover:bg-gray-50/80 transition">
+                                <td class="p-4 font-mono text-gray-500">SKU-1002</td>
+                                <td class="p-4 font-bold text-gray-800">កាបូបស្ពាយខ្នង Waterproof</td>
+                                <td class="p-4"><span class="bg-gray-100 text-gray-700 px-2.5 py-1 rounded-lg">សម្ភារប្រើប្រាស់</span></td>
+                                <td class="p-4 text-emerald-600 font-bold">$15.00</td>
+                                <td class="p-4 font-semibold text-amber-600">3 កាបូប</td>
+                                <td class="p-4"><span class="bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-bold text-[10px]">ជិតអស់</span></td>
+                                <td class="p-4 text-center space-x-2">
+                                    <button class="text-blue-600 hover:text-blue-800 font-bold"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button class="text-red-600 hover:text-red-800 font-bold"><i class="fa-solid fa-trash"></i></button>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -139,3 +180,4 @@
     </main>
 </body>
 </html>
+
