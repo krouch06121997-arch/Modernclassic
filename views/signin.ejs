@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ចូលប្រើប្រាស់ប្រព័ន្ធ - PACH KROUCH</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full border">
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl font-bold">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800">ចូលប្រើប្រាស់ប្រព័ន្ធ</h2>
+            <p class="text-xs text-gray-500 mt-1">សូមបញ្ចូល Email និង លេខសម្ងាត់របស់អ្នក</p>
+        </div>
+
+        <% if (locals.error) { %>
+            <div class="bg-red-50 text-red-600 text-xs p-3 rounded-xl mb-4 border border-red-200 text-center">
+                <%= error %>
+            </div>
+        <% } %>
+
+        <form action="/signin" method="POST" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-gray-700 mb-1">អាសយដ្ឋាន Email</label>
+                <div class="relative">
+                    <i class="fa-solid fa-envelope absolute left-4 top-3.5 text-gray-400 text-sm"></i>
+                    <input type="email" name="email" value="krouch06121997@gmail.com" required 
+                           class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border rounded-xl text-sm focus:outline-none focus:border-blue-500">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 mb-1">លេខសម្ងាត់ (Password)</label>
+                <div class="relative">
+                    <i class="fa-solid fa-key absolute left-4 top-3.5 text-gray-400 text-sm"></i>
+                    <input type="password" name="password" required placeholder="••••••••" 
+                           class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border rounded-xl text-sm focus:outline-none focus:border-blue-500">
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-md">
+                ចូលប្រព័ន្ធ (Sign In)
+            </button>
+        </form>
+
+        <p class="text-center text-xs text-gray-500 mt-6">
+            មិនទាន់មាន Account ទេ? 
+            <a href="/signup" class="text-blue-600 font-bold hover:underline">ចុះឈ្មោះទីនេះ (Sign Up)</a>
+        </p>
+    </div>
+</body>
+</html>
+
