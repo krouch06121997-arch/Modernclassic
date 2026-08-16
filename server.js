@@ -101,6 +101,14 @@ app.post('/forgot-password', async (req, res) => {
     });
 });
 
+// Route សម្រាប់បង្ហាញទំព័រកំណត់លេខសម្ងាត់ថ្មី
+app.get('/reset-password', (req, res) => {
+    res.render('reset_password', {
+        supabaseUrl: process.env.SUPABASE_URL,
+        supabaseKey: process.env.SUPABASE_ANON_KEY
+    });
+});
+
 
 // 3. Store Route (ទាញទិន្នន័យពី Supabase DB)
 app.get('/store', (req, res) => {
