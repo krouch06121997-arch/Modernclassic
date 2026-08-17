@@ -177,20 +177,10 @@ document.getElementById('closeQrBtn').onclick = () => {
 async function checkout() {
     if (cart.length === 0) return alert('សូមបន្ថែមទំនិញចូលកន្ត្រកជាមុនសិន!');
 
-    const qrModal = document.getElementById('qrModal');
-    const qrImage = document.getElementById('qrImage');
-    const qrLoading = document.getElementById('qrLoading');
-    const qrAmount = document.getElementById('qrAmount');
-
     const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0).toFixed(2);
-    qrAmount.innerText = `$${totalPrice}`;
-
-    qrModal.classList.remove('hidden');
-    qrImage.classList.add('hidden');
-    qrLoading.classList.remove('hidden');
 
     try {
-        const res = await fetch('/api/test-payway', {
+        const res = await fetch('/api/create-payway-checkout', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ amount: totalPrice })
@@ -198,28 +188,30 @@ async function checkout() {
 
         const result = await res.json();
 
-        if (result.success && result.response && result.response.qrImage) {
-            let qrData = result.response.qrImage;
-            
-            // បើ ABA ផ្ញើមកជា QR String ធម្មតា ត្រូវប្រើ API បង្កើតជារូបភាព QR
-            if (!qrData.startsWith('data:image') && !qrData.startsWith('http')) {
-                qrData = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}`;
+        if (result.success) {
+            // បង្កើត Hidden HTML Form ដើម្បី Redirect ទៅ ABA PayWay ផ្លូវការ
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = result.api_url;
+
+            for (const key in result.params) {
+                const hiddenField = document.createElement('input');
+                hiddenField.type = 'hidden';
+                hiddenField.name = key;
+                hiddenField.value = result.params[key];
+                form.appendChild(hiddenField);
             }
 
-            qrImage.src = qrData;
-            qrImage.classList.remove('hidden');
-            qrLoading.classList.add('hidden');
+            document.body.appendChild(form);
+            form.submit(); // បញ្ជូនអ្នកទិញទៅកាន់ទំព័រ ABA Checkout
         } else {
-            alert('ABA PayWay Response Error: ' + JSON.stringify(result.error || 'Unknown Error'));
-            qrModal.classList.add('hidden');
+            alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ ABA PayWay!');
         }
     } catch (err) {
         console.error(err);
         alert('មិនអាចភ្ជាប់ទៅកាន់ប្រព័ន្ធបង់ប្រាក់បានទេ!');
-        qrModal.classList.add('hidden');
     }
 }
-
 
     </script>
 </body>
