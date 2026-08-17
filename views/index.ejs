@@ -42,18 +42,7 @@
                     <span>របាយការណ៍លក់</span>
                 </a>
             </nav>
-            <!-- ប្រអប់បង្ហាញ Link ហាងផ្ទាល់ខ្លួន -->
-<div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 mb-6">
-    <div class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center font-bold">
-            <i class="fa-solid fa-store"></i>
-        </div>
-        <div>
-            <h4 class="text-xs font-bold text-indigo-950">Link ហាងអនឡាញរបស់អ្នក</h4>
-            <p class="text-[11px] text-indigo-700 font-mono" id="storeUrl">
-                <%= user ? `https://modernclassic-1.onrender.com/store/${user.id}` : '' %>
-            </p>
-        </div>
+            
     </div>
     
     <a href="/store/<%= user.id %>" target="_blank" 
