@@ -139,3 +139,26 @@ app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
 
+// Dynamic Storefront Route តាម User ID ម្ចាស់ហាង
+app.get('/store/:userId', async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        // ទាញយកទំនិញចេញពី Supabase ដោយចម្រាញ់យកតែ user_id របស់ម្ចាស់ហាង
+        const { data: products, error } = await supabase
+            .from('products')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        res.render('store', {
+            shopId: userId,
+            products: products || []
+        });
+    } catch (err) {
+        console.error("Store Error:", err.message);
+        res.status(500).send("មិនអាចបើកទំព័រហាងនេះបានទេ");
+    }
+});
