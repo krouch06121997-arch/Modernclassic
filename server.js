@@ -144,7 +144,7 @@ app.get('/store/:userId', async (req, res) => {
     const { userId } = req.params;
 
     try {
-        // ទាញយកទំនិញចេញពី Supabase ដោយចម្រាញ់យកតែ user_id របស់ម្ចាស់ហាង
+        // ១. ទាញយកទំនិញរបស់ម្ចាស់ហាងតាម user_id
         const { data: products, error } = await supabase
             .from('products')
             .select('*')
@@ -153,12 +153,16 @@ app.get('/store/:userId', async (req, res) => {
 
         if (error) throw error;
 
+        // ២. Render ទៅ store.ejs ដោយផ្ញើទាំង shop និង products
         res.render('store', {
-            shopId: userId,
+            shop: { 
+                id: userId, 
+                name: "PACH KROUCH STORE" 
+            },
             products: products || []
         });
     } catch (err) {
         console.error("Store Error:", err.message);
-        res.status(500).send("មិនអាចបើកទំព័រហាងនេះបានទេ");
+        res.status(500).send("មិនអាចបើកទំព័រហាងនេះបានទេ៖ " + err.message);
     }
 });
