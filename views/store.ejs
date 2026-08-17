@@ -169,16 +169,59 @@
         document.getElementById('openCartBtn').onclick = () => modal.classList.remove('hidden');
         document.getElementById('closeCartBtn').onclick = () => modal.classList.add('hidden');
 
-        function checkout() {
-            if (cart.length === 0) {
-                alert('សូមបន្ថែមទំនិញចូលកន្ត្រកជាមុនសិន!');
-                return;
+        // បិទ QR Modal
+document.getElementById('closeQrBtn').onclick = () => {
+    document.getElementById('qrModal').classList.add('hidden');
+};
+
+async function checkout() {
+    if (cart.length === 0) return alert('សូមបន្ថែមទំនិញចូលកន្ត្រកជាមុនសិន!');
+
+    const qrModal = document.getElementById('qrModal');
+    const qrImage = document.getElementById('qrImage');
+    const qrLoading = document.getElementById('qrLoading');
+    const qrAmount = document.getElementById('qrAmount');
+
+    const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0).toFixed(2);
+    qrAmount.innerText = `$${totalPrice}`;
+
+    // បើក Modal និងបង្ហាញ Loading
+    qrModal.classList.remove('hidden');
+    qrImage.classList.add('hidden');
+    qrLoading.classList.remove('hidden');
+
+    try {
+        const res = await fetch('/api/test-payway', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cart, amount: totalPrice })
+        });
+
+        const result = await res.json();
+
+        if (result.success && result.response) {
+            // ប្រសិនបើ ABA បង្វែរមកវិញជា Image URL ឬ Base64
+            const qrSrc = result.response.qrImage || result.response.qrString || '';
+            
+            if(qrSrc) {
+                qrImage.src = qrSrc;
+                qrImage.classList.remove('hidden');
+                qrLoading.classList.add('hidden');
+            } else {
+                alert('បង្កើត QR ជោគជ័យ ប៉ុន្តែពុំមានរូបភាព QR ឡើយ៖ ' + JSON.stringify(result.response));
+                qrModal.classList.add('hidden');
             }
-            alert('ការកម្មង់ទិញជោគជ័យ! សូមអរគុណ។');
-            cart = [];
-            updateCartUI();
-            modal.classList.add('hidden');
+        } else {
+            alert('មានបញ្ហាក្នុងការបង្កើត QR Code!');
+            qrModal.classList.add('hidden');
         }
+    } catch (err) {
+        console.error(err);
+        alert('មិនអាចភ្ជាប់ទៅកាន់ប្រព័ន្ធបង់ប្រាក់បានទេ!');
+        qrModal.classList.add('hidden');
+    }
+}
+
     </script>
 </body>
 </html>
