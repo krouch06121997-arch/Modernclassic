@@ -168,65 +168,45 @@ app.get('/store/:userId', async (req, res) => {
 });
 
 const crypto = require('crypto');
-const axios = require('axios');
-const FormData = require('form-data'); // ត្រូវប្រាកដថា npm install form-data
 
-app.post('/api/test-payway', async (req, res) => {
+app.post('/api/create-payway-checkout', (req, res) => {
     try {
         const { amount } = req.body;
         const totalAmount = parseFloat(amount || 1.00).toFixed(2);
 
+        // ទាញយក Credentials ABA របស់អ្នក
         const merchant_id = process.env.ABA_PAYWAY_MERCHANT_ID || 'ec477173';
         const api_key = process.env.ABA_PAYWAY_API_KEY || '5672a2121b8c678c654c7724537b0aa28c1d76f2';
         const api_url = process.env.ABA_PAYWAY_API_URL || 'https://checkout-sandbox.payway.com.kh/api/payment-gateway/v1/payments/purchase';
 
-        // 1. ពេលវេលា GMT/UTC YYYYMMDDHHmmss
-        const now = new Date();
-        const req_time = now.toISOString().replace(/[-:T.Z]/g, "").slice(0, 14);
+        const req_time = new Date().toISOString().replace(/[-:T.Z]/g, "").slice(0, 14);
         const tran_id = "TRAN" + Date.now();
         const req_type = "purchase";
         const payment_option = "abapay_khqr";
 
-        // 2. Encode Items ជា Base64
-        const itemsArr = [{ name: "Order Payment", quantity: "1", price: totalAmount }];
-        const items = Buffer.from(JSON.stringify(itemsArr)).toString('base64');
+        // Encode Items ជា Base64
+        const items = Buffer.from(JSON.stringify([{ name: "Order Payment", quantity: "1", price: totalAmount }])).toString('base64');
 
-        // 3. បង្កើត Hash តាមលំដាប់លំដោយរៀបដោយ ABA (req_time + merchant_id + tran_id + amount + items + req_type + payment_option)
+        // បង្កើត HMAC-SHA256 Hash
         const rawHash = req_time + merchant_id + tran_id + totalAmount + items + req_type + payment_option;
         const hash = crypto.createHmac('sha256', api_key).update(rawHash).digest('base64');
 
-        // 4. ផ្ញើតាម form-data (Multipart)
-        const form = new FormData();
-        form.append('req_time', req_time);
-        form.append('merchant_id', merchant_id);
-        form.append('tran_id', tran_id);
-        form.append('amount', totalAmount);
-        form.append('items', items);
-        form.append('req_type', req_type);
-        form.append('payment_option', payment_option);
-        form.append('hash', hash);
-
-        const response = await axios.post(api_url, form, {
-            headers: { ...form.getHeaders() }
+        // ផ្ញើ Data ត្រឡប់ទៅ Frontend ដើម្បី Submit Form ទៅ ABA ផ្លូវការ
+        res.json({
+            success: true,
+            api_url: api_url,
+            params: {
+                req_time,
+                merchant_id,
+                tran_id,
+                amount: totalAmount,
+                items,
+                req_type,
+                payment_option,
+                hash
+            }
         });
-
-        console.log("ABA Response:", response.data);
-
-        // 5. ចាប់យករូបភាព ឬ String QR
-        const resData = response.data;
-        if (resData && (resData.status?.code === "00" || resData.status === 0 || resData.qrImage || resData.qrString)) {
-            res.json({ 
-                success: true, 
-                response: {
-                    qrImage: resData.qrImage || resData.qrString || resData.abapay_deeplink
-                } 
-            });
-        } else {
-            res.json({ success: false, error: resData });
-        }
-
     } catch (err) {
-        console.error("ABA PayWay Error:", err.response ? err.response.data : err.message);
         res.status(500).json({ success: false, message: err.message });
     }
 });
