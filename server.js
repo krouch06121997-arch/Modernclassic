@@ -174,24 +174,29 @@ app.post('/api/create-payway-checkout', (req, res) => {
         const { amount } = req.body;
         const totalAmount = parseFloat(amount || 1.00).toFixed(2);
 
-        // ទាញយក Credentials ABA របស់អ្នក
+        // ព័ត៌មាន ABA Credentials
         const merchant_id = process.env.ABA_PAYWAY_MERCHANT_ID || 'ec477173';
         const api_key = process.env.ABA_PAYWAY_API_KEY || '5672a2121b8c678c654c7724537b0aa28c1d76f2';
         const api_url = process.env.ABA_PAYWAY_API_URL || 'https://checkout-sandbox.payway.com.kh/api/payment-gateway/v1/payments/purchase';
 
+        // ១. បង្កើត req_time ទម្រង់ YYYYMMDDHHmmss
         const req_time = new Date().toISOString().replace(/[-:T.Z]/g, "").slice(0, 14);
         const tran_id = "TRAN" + Date.now();
         const req_type = "purchase";
         const payment_option = "abapay_khqr";
 
-        // Encode Items ជា Base64
-        const items = Buffer.from(JSON.stringify([{ name: "Order Payment", quantity: "1", price: totalAmount }])).toString('base64');
+        // ២. Encode items ជា Base64 (ត្រូវប្រាកដថាមិនមាន Space)
+        const itemsArr = [{ name: "Order Payment", quantity: "1", price: totalAmount }];
+        const items = Buffer.from(JSON.stringify(itemsArr)).toString('base64');
 
-        // បង្កើត HMAC-SHA256 Hash
+        // ៣. រៀបចំ String សម្រាប់បង្កើត Hash តាម Standard ABA Checkout V1
+        // រូបមន្ត៖ req_time + merchant_id + tran_id + amount + items + req_type + payment_option
         const rawHash = req_time + merchant_id + tran_id + totalAmount + items + req_type + payment_option;
+        
+        // បង្កើត HMAC-SHA256 Hash
         const hash = crypto.createHmac('sha256', api_key).update(rawHash).digest('base64');
 
-        // ផ្ញើ Data ត្រឡប់ទៅ Frontend ដើម្បី Submit Form ទៅ ABA ផ្លូវការ
+        // ៤. ផ្ញើ Data ត្រឡប់ទៅ Frontend ដើម្បី Submit Form
         res.json({
             success: true,
             api_url: api_url,
@@ -207,6 +212,7 @@ app.post('/api/create-payway-checkout', (req, res) => {
             }
         });
     } catch (err) {
+        console.error("Hash Error:", err.message);
         res.status(500).json({ success: false, message: err.message });
     }
 });
