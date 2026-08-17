@@ -172,37 +172,56 @@ const axios = require('axios');
 
 app.post('/api/test-payway', async (req, res) => {
     try {
-        const req_time = new Date().toISOString().replace(/[-:T.Z]/g, "").slice(0, 14); // YYYYMMDDHHmmss
-        const tran_id = "TEST-" + Date.now();
-        const amount = "1.00"; // តេស្ត $1.00
-        const items = Buffer.from(JSON.stringify([{ name: "Test Item", quantity: "1", price: "1.00" }])).toString('base64');
+        const { amount } = req.body;
+        
+        // Credentials សម្រាប់ Sandbox Test (បើគ្មានក្នុង .env ទេ វានឹងប្រើ Demo Keys នេះ)
+        const merchant_id = process.env.ABA_PAYWAY_MERCHANT_ID || 'ec438918';
+        const api_key = process.env.ABA_PAYWAY_API_KEY || '1e7b8a5b84c83f982d1c68bf7a303861';
+        const api_url = process.env.ABA_PAYWAY_API_URL || 'https://checkout-sandbox.payway.com.kh/api/dobusiness/v1/purchase';
+
+        const req_time = new Date().toISOString().replace(/[-:T.Z]/g, "").slice(0, 14);
+        const tran_id = "TRAN" + Date.now();
         const req_type = "purchase";
         const payment_option = "abapay_khqr";
-
-        const merchant_id = process.env.ABA_PAYWAY_MERCHANT_ID;
-        const api_key = process.env.ABA_PAYWAY_API_KEY;
+        const totalAmount = parseFloat(amount || 1.00).toFixed(2);
+        
+        // Encode Items ជា Base64
+        const items = Buffer.from(JSON.stringify([{ name: "Order Payment", quantity: "1", price: totalAmount }])).toString('base64');
 
         // បង្កើត HMAC-SHA256 Hash
-        const hashStr = req_time + merchant_id + tran_id + amount + items + req_type + payment_option;
-        const hash = crypto.createHmac('sha256', api_key).update(hashStr).digest('base64');
+        const rawHash = req_time + merchant_id + tran_id + totalAmount + items + req_type + payment_option;
+        const hash = crypto.createHmac('sha256', api_key).update(rawHash).digest('base64');
 
-        // ផ្ញើ Request ទៅ ABA Sandbox
+        // ផ្ញើ Request
         const formData = new URLSearchParams();
         formData.append('req_time', req_time);
         formData.append('merchant_id', merchant_id);
         formData.append('tran_id', tran_id);
-        formData.append('amount', amount);
+        formData.append('amount', totalAmount);
         formData.append('items', items);
         formData.append('req_type', req_type);
         formData.append('payment_option', payment_option);
         formData.append('hash', hash);
 
-        const response = await axios.post(process.env.ABA_PAYWAY_API_URL, formData, {
+        const response = await axios.post(api_url, formData, {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
         });
 
-        res.json({ success: true, response: response.data });
+        console.log("ABA PayWay Response:", response.data);
+
+        if (response.data && (response.data.status?.code === "00" || response.data.qrImage || response.data.qrString)) {
+            res.json({ 
+                success: true, 
+                response: {
+                    qrImage: response.data.qrImage || response.data.qrString || response.data.abapay_deeplink
+                } 
+            });
+        } else {
+            res.json({ success: false, error: response.data });
+        }
+
     } catch (err) {
-        res.status(500).json({ success: false, error: err.message });
+        console.error("ABA API Error:", err.response ? err.response.data : err.message);
+        res.status(500).json({ success: false, message: err.message });
     }
 });
