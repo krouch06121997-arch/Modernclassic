@@ -174,29 +174,45 @@ app.post('/api/create-payway-checkout', (req, res) => {
         const { amount } = req.body;
         const totalAmount = parseFloat(amount || 1.00).toFixed(2);
 
-        // ព័ត៌មាន ABA Credentials
         const merchant_id = process.env.ABA_PAYWAY_MERCHANT_ID || 'ec477173';
-        const api_key = process.env.ABA_PAYWAY_API_KEY || '5672a2121b8c678c654c7724537b0aa28c1d76f2';
         const api_url = process.env.ABA_PAYWAY_API_URL || 'https://checkout-sandbox.payway.com.kh/api/payment-gateway/v1/payments/purchase';
 
-        // ១. បង្កើត req_time ទម្រង់ YYYYMMDDHHmmss
+        // 1. RSA Private Key ដែល ABA បានផ្ដល់ជូន
+        const privateKey = `-----BEGIN RSA PRIVATE KEY-----
+MIICWwIBAAKBgQCUcWjsSam2X45TfesLBJnmWKRhLGYd1IUS17FaZ15ZgvGsNwfK
+Ckb2JvdwnIungQz6zuAStibBw8Iy8BNAkdL9DogOZnfq1mMSLGQOsdtDUtZtBcrw
+zWh2gOhGabD2nQPrX5NfRBRNUnl5dPH5GUjTHgZSotFMsdsv+wVDnDoPtwIDAQAB
+AoGAMQYzbLX3Qq/URWa0lXLzkMt9nkoXf4qMWGi7veudkVpZjlKuU9+JCApedeZ9
+iNhp/PsNraBStHN+U2xOL2j5kPBA0pNje7VUScYD2guub44WE+LlAg7DJIz7xUSG
+JO+BeVC6Q4/zFtDutXOjqDuU9hDEfrYlV5hfusiqjeZE/IECQQCxVXjNDBif+022
+zqZDycpLQg0DZqMzVPTcKHQUAuVM4RxfaBydy1edgK9yPhtrvkAfsQrWGYtCaSkT
+nyoA9xsRAkEA1ksCvkynYuzREGnVcKonjcgcJ2DiroAX5uLmWAFRWkeDIpGvcFGt
++68M4W4JTsNgEP2eiXDc8zbyCPlNNoyuRwJAT73dimbsE9SPh6q5PTZaTykubN8U
+eBq12OIgAHek4MNBXO2WIKa1iU+6lSa0ceilMRsNgmUOKBjdrcMewjxb4QJANb++
+wmiLm352ub0x8f5byW4l0aK1eLtcQ2cqC2zZMOG6/JK6BFwYXYZ8npZw8zaCBAD5
+INQUN1TSxHlzanlCxQJANquw9P8yCxgAS2vBdGLZBjYo5CoN/9GQeRpMbB7PXQMk
+vOF4H5CVn6avoUyYZEDzhXBTNSBbshX5+nwxfaoShQ==
+-----END RSA PRIVATE KEY-----`;
+
         const req_time = new Date().toISOString().replace(/[-:T.Z]/g, "").slice(0, 14);
         const tran_id = "TRAN" + Date.now();
         const req_type = "purchase";
         const payment_option = "abapay_khqr";
 
-        // ២. Encode items ជា Base64 (ត្រូវប្រាកដថាមិនមាន Space)
+        // 2. Base64 encode ទំនិញ
         const itemsArr = [{ name: "Order Payment", quantity: "1", price: totalAmount }];
         const items = Buffer.from(JSON.stringify(itemsArr)).toString('base64');
 
-        // ៣. រៀបចំ String សម្រាប់បង្កើត Hash តាម Standard ABA Checkout V1
-        // រូបមន្ត៖ req_time + merchant_id + tran_id + amount + items + req_type + payment_option
+        // 3. តម្រៀប Raw Data តាម Standard ABA
         const rawHash = req_time + merchant_id + tran_id + totalAmount + items + req_type + payment_option;
-        
-        // បង្កើត HMAC-SHA256 Hash
-        const hash = crypto.createHmac('sha256', api_key).update(rawHash).digest('base64');
 
-        // ៤. ផ្ញើ Data ត្រឡប់ទៅ Frontend ដើម្បី Submit Form
+        // 4. បង្កើត Digital Signature ដោយប្រើ RSA Private Key (SHA512)
+        const signer = crypto.createSign('SHA512');
+        signer.update(rawHash);
+        signer.end();
+        const hash = signer.sign(privateKey, 'base64');
+
+        // 5. បញ្ជូន Parameters ទៅកាន់ Frontend Form
         res.json({
             success: true,
             api_url: api_url,
@@ -212,7 +228,7 @@ app.post('/api/create-payway-checkout', (req, res) => {
             }
         });
     } catch (err) {
-        console.error("Hash Error:", err.message);
+        console.error("RSA Hash Error:", err.message);
         res.status(500).json({ success: false, message: err.message });
     }
 });
