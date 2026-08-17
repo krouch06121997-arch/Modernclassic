@@ -169,55 +169,60 @@ app.get('/store/:userId', async (req, res) => {
 
 const crypto = require('crypto');
 const axios = require('axios');
+const FormData = require('form-data'); // ត្រូវប្រាកដថា npm install form-data
 
 app.post('/api/test-payway', async (req, res) => {
     try {
         const { amount } = req.body;
         const totalAmount = parseFloat(amount || 1.00).toFixed(2);
-        
-        // ទាញយក Credentials ចេញពី .env ឬប្រើប្រាស់ Key ថ្មីរបស់អ្នក
+
         const merchant_id = process.env.ABA_PAYWAY_MERCHANT_ID || 'ec477173';
         const api_key = process.env.ABA_PAYWAY_API_KEY || '5672a2121b8c678c654c7724537b0aa28c1d76f2';
         const api_url = process.env.ABA_PAYWAY_API_URL || 'https://checkout-sandbox.payway.com.kh/api/payment-gateway/v1/payments/purchase';
 
-        const req_time = new Date().toISOString().replace(/[-:T.Z]/g, "").slice(0, 14);
+        // 1. ពេលវេលា GMT/UTC YYYYMMDDHHmmss
+        const now = new Date();
+        const req_time = now.toISOString().replace(/[-:T.Z]/g, "").slice(0, 14);
         const tran_id = "TRAN" + Date.now();
         const req_type = "purchase";
         const payment_option = "abapay_khqr";
-        
-        // Encode Items ទៅជា Base64 Standard
-        const items = Buffer.from(JSON.stringify([{ name: "Order Payment", quantity: "1", price: totalAmount }])).toString('base64');
 
-        // បង្កើត HMAC-SHA256 Hash តាម Security Standard របស់ ABA
+        // 2. Encode Items ជា Base64
+        const itemsArr = [{ name: "Order Payment", quantity: "1", price: totalAmount }];
+        const items = Buffer.from(JSON.stringify(itemsArr)).toString('base64');
+
+        // 3. បង្កើត Hash តាមលំដាប់លំដោយរៀបដោយ ABA (req_time + merchant_id + tran_id + amount + items + req_type + payment_option)
         const rawHash = req_time + merchant_id + tran_id + totalAmount + items + req_type + payment_option;
         const hash = crypto.createHmac('sha256', api_key).update(rawHash).digest('base64');
 
-        const formData = new URLSearchParams();
-        formData.append('req_time', req_time);
-        formData.append('merchant_id', merchant_id);
-        formData.append('tran_id', tran_id);
-        formData.append('amount', totalAmount);
-        formData.append('items', items);
-        formData.append('req_type', req_type);
-        formData.append('payment_option', payment_option);
-        formData.append('hash', hash);
+        // 4. ផ្ញើតាម form-data (Multipart)
+        const form = new FormData();
+        form.append('req_time', req_time);
+        form.append('merchant_id', merchant_id);
+        form.append('tran_id', tran_id);
+        form.append('amount', totalAmount);
+        form.append('items', items);
+        form.append('req_type', req_type);
+        form.append('payment_option', payment_option);
+        form.append('hash', hash);
 
-        // បាញ់ Request ទៅកាន់ ABA PayWay Sandbox API
-        const response = await axios.post(api_url, formData, {
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        const response = await axios.post(api_url, form, {
+            headers: { ...form.getHeaders() }
         });
 
-        console.log("ABA Response Status:", response.data);
+        console.log("ABA Response:", response.data);
 
-        if (response.data && (response.data.status?.code === "00" || response.data.qrImage || response.data.qrString)) {
+        // 5. ចាប់យករូបភាព ឬ String QR
+        const resData = response.data;
+        if (resData && (resData.status?.code === "00" || resData.status === 0 || resData.qrImage || resData.qrString)) {
             res.json({ 
                 success: true, 
                 response: {
-                    qrImage: response.data.qrImage || response.data.qrString || response.data.abapay_deeplink
+                    qrImage: resData.qrImage || resData.qrString || resData.abapay_deeplink
                 } 
             });
         } else {
-            res.json({ success: false, error: response.data });
+            res.json({ success: false, error: resData });
         }
 
     } catch (err) {
